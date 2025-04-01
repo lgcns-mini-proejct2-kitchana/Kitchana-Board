@@ -48,8 +48,8 @@ pipeline {
                                     cleanRemote: false,
                                     excludes: '',
                                     execCommand: """
-                                        docker build -t ${env.AWS_ECR_URI}/kitchana/board:$tag -f ./inner/DockerfileBoard ./inner
-                                        docker push ${env.AWS_ECR_URI}/kitchana/board:$tag
+                                        docker build -t ${env.AWS_ECR_URI}/kitchana/board:${tag} -f ./inner/DockerfileBoard ./inner
+                                        docker push ${env.AWS_ECR_URI}/kitchana/board:${tag}
                                     """,
                                     execTimeout: 180000,
                                     flatten: false,
