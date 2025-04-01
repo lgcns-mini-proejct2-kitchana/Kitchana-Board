@@ -21,35 +21,35 @@ public class Board {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long boardId;
 
-    @Column
+    @Column(name = "nickname", columnDefinition = "VARCHAR(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci")
     private String nickname;
 
-    @Column(nullable = false)
+    @Column(name = "board_title", nullable = false, columnDefinition = "VARCHAR(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci")
     private String boardTitle;
 
-    @Column(nullable = false)
+    @Column(name = "content", nullable = false, columnDefinition = "TEXT CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci")
     private String content;
 
-    @Column(nullable = false)
+    @Column(name = "hit_cnt", nullable = false)
     private int hitCnt = 0;
 
-    @Column(nullable = false)
+    @Column(name = "news_title", nullable = false, columnDefinition = "VARCHAR(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci")
     private String newsTitle;
 
-    @Column(nullable = false, length = 3000)
+    @Column(name = "long_summary", nullable = false, length = 3000, columnDefinition = "TEXT CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci")
     private String longSummary;
 
-    @Column(nullable = false)
+    @Column(name = "news_url", nullable = false, columnDefinition = "VARCHAR(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci")
     private String newsUrl;
 
     @CreationTimestamp
-    @Column(nullable = false, updatable = false)
+    @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
-    @Column(nullable = false)
+    @Column(name = "deleted_yn", nullable = false)
     private boolean deletedYn = false;
 
-    @Column
+    @Column(name = "user_id")
     private Long userId;
 
 //    @OneToOne(cascade = CascadeType.ALL)
