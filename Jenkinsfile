@@ -37,38 +37,80 @@ pipeline {
 
         stage('Build Docker Image & Push to ECR') {
             steps {
-                sshPublisher(publishers: [
-                    sshPublisherDesc(
-                        configName: 'kitchana-docker',  // EC2에 대한 SSH 구성 이름
-                        transfers: [
-                            sshTransfer(
-                                cleanRemote: false,
-                                excludes: '',
-                                execCommand: """
-                                    docker build -t ${env.AWS_ECR_URI}/kitchana/board:$TAG -f ./inner/DockerfileBoard .
-
-                                    docker push ${env.AWS_ECR_URI}/kitchana/board:$TAG
-                                """,
-                                execTimeout: 180000,
-                                flatten: false,
-                                makeEmptyDirs: false,
-                                noDefaultExcludes: false,
-                                patternSeparator: '[, ]+',
-                                remoteDirectory: './inner',
-                                remoteDirectorySDF: false,
-                                removePrefix: 'build/libs',
-                                sourceFiles: 'build/libs/board-0.0.1-SNAPSHOT.jar'  // 'article' 관련 JAR만 선택
-                            )
-                        ],
-                        usePromotionTimestamp: false,
-                        useWorkspaceInPromotion: false,
-                        verbose: false
-                    )
-                ])
+                script {
+                    def tag = (params.TAG == 'latest' || params.TAG.trim() == '') ? env.BUILD_NUMBER : params.TAG
+                    
+                    sshPublisher(publishers: [
+                        sshPublisherDesc(
+                            configName: 'kitchana-docker',  // EC2에 대한 SSH 구성 이름
+                            transfers: [
+                                sshTransfer(
+                                    cleanRemote: false,
+                                    excludes: '',
+                                    execCommand: """
+                                        docker build -t ${env.AWS_ECR_URI}/kitchana/board:$TAG -f ./inner/DockerfileBoard ./inner
+    
+                                        docker push ${env.AWS_ECR_URI}/kitchana/board:$TAG
+                                    """,
+                                    execTimeout: 180000,
+                                    flatten: false,
+                                    makeEmptyDirs: false,
+                                    noDefaultExcludes: false,
+                                    patternSeparator: '[, ]+',
+                                    remoteDirectory: './inner',
+                                    remoteDirectorySDF: false,
+                                    removePrefix: 'build/libs',
+                                    sourceFiles: 'build/libs/board-0.0.1-SNAPSHOT.jar'
+                                )
+                            ],
+                            usePromotionTimestamp: false,
+                            useWorkspaceInPromotion: false,
+                            verbose: false
+                        )
+                    ])
+                }
             }
         }
     }
 
+    stage('Deploy to EC2') {
+            steps {
+                script {
+                    def tag = (params.TAG == 'latest' || params.TAG.trim() == '') ? env.BUILD_NUMBER : params.TAG
+
+                    sshPublisher(publishers: [
+                        sshPublisherDesc(
+                            configName: 'kitchana-docker',
+                            transfers: [
+                                sshTransfer(
+                                    cleanRemote: false,
+                                    excludes: '',
+                                    sourceFiles: 'deploy-board.sh',
+                                    removePrefix: '',
+                                    remoteDirectory: '/tmp',
+                                    execCommand: """
+                                        cd /home/ec2-user/tmp
+                                        chmod +x deploy-board.sh
+                                        export TAG=${tag}
+                                        ./deploy-board.sh
+                                    """,
+                                    execTimeout: 180000,
+                                    flatten: false,
+                                    makeEmptyDirs: false,
+                                    noDefaultExcludes: false,
+                                    patternSeparator: '[, ]+'
+                                )
+                            ],
+                            usePromotionTimestamp: false,
+                            useWorkspaceInPromotion: false,
+                            verbose: false
+                        )
+                    ])
+                }
+            }
+        }
+    }
+    
     post {
         success {
             echo 'pipeline succeeded'
