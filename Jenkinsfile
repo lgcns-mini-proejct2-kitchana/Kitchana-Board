@@ -39,18 +39,17 @@ pipeline {
             steps {
                 script {
                     def tag = (params.TAG == 'latest' || params.TAG.trim() == '') ? env.BUILD_NUMBER : params.TAG
-                    
+
                     sshPublisher(publishers: [
                         sshPublisherDesc(
-                            configName: 'kitchana-docker',  // EC2에 대한 SSH 구성 이름
+                            configName: 'kitchana-docker',
                             transfers: [
                                 sshTransfer(
                                     cleanRemote: false,
                                     excludes: '',
                                     execCommand: """
-                                        docker build -t ${env.AWS_ECR_URI}/kitchana/board:$TAG -f ./inner/DockerfileBoard ./inner
-    
-                                        docker push ${env.AWS_ECR_URI}/kitchana/board:$TAG
+                                        docker build -t ${env.AWS_ECR_URI}/kitchana/board:$tag -f ./inner/DockerfileBoard ./inner
+                                        docker push ${env.AWS_ECR_URI}/kitchana/board:$tag
                                     """,
                                     execTimeout: 180000,
                                     flatten: false,
@@ -71,9 +70,8 @@ pipeline {
                 }
             }
         }
-    }
 
-    stage('Deploy to EC2') {
+        stage('Deploy to EC2') {
             steps {
                 script {
                     def tag = (params.TAG == 'latest' || params.TAG.trim() == '') ? env.BUILD_NUMBER : params.TAG
@@ -110,7 +108,7 @@ pipeline {
             }
         }
     }
-    
+
     post {
         success {
             echo 'pipeline succeeded'
